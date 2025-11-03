@@ -2,14 +2,14 @@
 
 int main()
 {
-print(" /\n")
-print(" / \/n")
-print(" / \n")
-print("/ \n")
-print(" ---- /n")
-print("| _ |n")
-print("| |_||n"
-print("| __|\n"
-print("|| | |\n")
-print("|| | |\n")
+printf("   /\\\r\n");
+printf("  /  \\\r\n");
+printf(" /    \\\r\n");
+printf("/      \\\r\n");
+printf("--------\r\n");
+printf("|      _ |\r\n");
+printf("|     |_||\r\n");
+printf("|  __    |\r\n");
+printf("| |  |   |\r\n");
+printf("| |  |___|\r\n");
 }
