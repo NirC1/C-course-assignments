@@ -12,4 +12,5 @@ printf("|     |_||\n");
 printf("|  __    |\n");
 printf("| |  |   |\n");
 printf("| |  |___|\n");
+return 0;
 }
