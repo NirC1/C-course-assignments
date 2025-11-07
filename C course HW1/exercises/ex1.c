@@ -39,7 +39,7 @@ int main(void){
             printf("Base 10 representation was already computed above.\n");
             break;
         case 16:
-            printf("0d%d = 0X%x\n", absolute_value(number), absolute_value(number));
+            printf("0d%d = 0x%x\n", absolute_value(number), absolute_value(number));
             break;
     }
     
