@@ -4,6 +4,8 @@ int check_valid_base(int base);
 
 char sign(int num);
 int absolute_value(int num);
+int number_of_digits(int num);
+int sum_of_digits(int num);
 
 
 int main(void){
@@ -25,7 +27,9 @@ int main(void){
 
     printf("Decimal representation of the absolute value: %d\n", absolute_value(number));
     
-    
+    printf("The number of digits is: %d\n", number_of_digits(number));
+
+    printf("The sum of digits is: %d\n", sum_of_digits(number));
     
     return 0;
 }
@@ -48,4 +52,22 @@ char sign(int num){
 int absolute_value(int num)
 {
     return num < 0 ? -num : num;
+}
+
+int number_of_digits(int num)
+{
+    int numDigits = 0;
+    for(num = absolute_value(num) ; num > 0; num = num/10){
+        numDigits++;
+    }
+    return numDigits;
+}
+
+int sum_of_digits(int num)
+{
+    int sumDigits = 0;
+    for(num = absolute_value(num) ; num > 0; num = num/10){
+        sumDigits += num % 10;
+    }
+    return sumDigits;
 }
