@@ -30,6 +30,18 @@ int main(void){
     printf("The number of digits is: %d\n", number_of_digits(number));
 
     printf("The sum of digits is: %d\n", sum_of_digits(number));
+
+    switch (base){
+        case 8:
+            printf("0d%d = 0%o\n", absolute_value(number), absolute_value(number));
+            break;
+        case 10:
+            printf("Base 10 representation was already computed above.\n");
+            break;
+        case 16:
+            printf("0d%d = 0X%x\n", absolute_value(number), absolute_value(number));
+            break;
+    }
     
     return 0;
 }
