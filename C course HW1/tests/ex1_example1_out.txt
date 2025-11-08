@@ -1,7 +1,0 @@
-Please enter a number (integer) and a base:
-Here is some information about the given numbers: 149
-Its sign is: +
-Decimal representation of the absolute value: 149
-The number of digits is: 3
-The sum of digits is: 14
-Base 10 representation was already computed above.

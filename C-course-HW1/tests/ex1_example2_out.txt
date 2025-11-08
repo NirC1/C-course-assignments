@@ -1,0 +1,9 @@
+Please enter a number (integer) and a base:
+Invalid base 4
+Please enter a valid base [8,10,16]:
+Here is some information about the given numbers: -8
+Its sign is: -
+Decimal representation of the absolute value: 8
+The number of digits is: 1
+The sum of digits is: 8
+0d8 = 0x8
