@@ -1,0 +1,7 @@
+Please enter the exam score (0-100):
+Invalid exam score: 998
+Please enter a new exam score in the range 0-100:
+Invalid exam score: -46
+Please enter a new exam score in the range 0-100:
+The user has inserted 3 consecutive times an invalid score.
+Exiting the program!
