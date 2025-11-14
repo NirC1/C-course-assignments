@@ -68,18 +68,18 @@ int absolute_value(int num)
 
 int number_of_digits(int num)
 {
-    int numDigits = 0;
+    int num_digits = 0;
     for(num = absolute_value(num) ; num > 0; num = num/10){
-        numDigits++;
+        num_digits++;
     }
-    return numDigits;
+    return num_digits;
 }
 
 int sum_of_digits(int num)
 {
-    int sumDigits = 0;
+    int sum_digits = 0;
     for(num = absolute_value(num) ; num > 0; num = num/10){
-        sumDigits += num % 10;
+        sum_digits += num % 10;
     }
-    return sumDigits;
+    return sum_digits;
 }
