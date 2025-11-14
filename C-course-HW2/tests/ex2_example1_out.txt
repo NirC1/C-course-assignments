@@ -1,0 +1,2 @@
+Please insert a non-negative integer:
+The repeated sum of digits in 80479 is: 1

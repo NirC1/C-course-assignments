@@ -1,0 +1,2 @@
+Enter a 3-digit integer:
+Invalid input. Must be a 3-digit number.

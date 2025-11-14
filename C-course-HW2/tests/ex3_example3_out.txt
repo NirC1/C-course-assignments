@@ -1,0 +1,3 @@
+Enter a 3-digit integer:
+Enter target value:
+Found 6 ways to reach the target using '+', '-' and '*' operations.

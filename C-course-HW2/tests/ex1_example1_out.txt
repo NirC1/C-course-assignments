@@ -1,0 +1,2 @@
+Please insert a non-negative integer:
+The number of even digits in 302118 is: 2
