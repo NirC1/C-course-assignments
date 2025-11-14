@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-// TODO: add your recursive function implementation here
+unsigned int digital_root(unsigned int num);
 
 int main() {
   unsigned int num;
@@ -10,9 +10,21 @@ int main() {
   printf("Please insert a non-negative integer:\n");
   scanf("%u", &num);
 
-  // TODO: Compute the repeated sum of digits:
+  result = digital_root(num);
 
   // Prompt result to user
   printf("The repeated sum of digits in %u is: %u\n", num, result);
   return 0;
+}
+
+unsigned int digital_root(unsigned int num)
+{
+  if ( num < 10 ){
+    return num;
+  }
+  unsigned int sum = 0;
+  for (; num > 0 ; num = num / 10){
+    sum += num % 10;
+  }
+  return digital_root(sum);
 }
