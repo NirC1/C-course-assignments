@@ -9,12 +9,12 @@ gcc -Wall -Wextra ..\exercises\ex3.c -o ..\exercises\ex3.exe
 echo compiled ex3
 
 
-ex1.exe < ex1_example1_in.txt > ex1_example1_out_mine.txt
-ex2.exe < ex2_example1_in.txt > ex2_example1_out_mine.txt
-ex3.exe < ex3_example1_in.txt > ex3_example1_out_mine.txt
-ex3.exe < ex3_example2_in.txt > ex3_example2_out_mine.txt
-ex3.exe < ex3_example3_in.txt > ex3_example3_out_mine.txt
-ex3.exe < ex3_example4_in.txt > ex3_example4_out_mine.txt
+..\exercises\ex1.exe < ex1_example1_in.txt > ex1_example1_out_mine.txt
+..\exercises\ex2.exe < ex2_example1_in.txt > ex2_example1_out_mine.txt
+..\exercises\ex3.exe < ex3_example1_in.txt > ex3_example1_out_mine.txt
+..\exercises\ex3.exe < ex3_example2_in.txt > ex3_example2_out_mine.txt
+..\exercises\ex3.exe < ex3_example3_in.txt > ex3_example3_out_mine.txt
+..\exercises\ex3.exe < ex3_example4_in.txt > ex3_example4_out_mine.txt
 
 fc ex1_example1_out_mine.txt ex1_example1_out.txt
 fc ex2_example1_out_mine.txt ex2_example1_out.txt
