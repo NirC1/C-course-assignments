@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 unsigned int digital_root(unsigned int num);
+unsigned int sum_of_digits(unsigned int num);
 
 int main() {
   unsigned int num;
@@ -22,9 +23,14 @@ unsigned int digital_root(unsigned int num)
   if ( num < 10 ){
     return num;
   }
-  unsigned int sum = 0;
-  for (; num > 0 ; num = num / 10){
-    sum += num % 10;
-  }
+  unsigned int sum = sum_of_digits(num);
   return digital_root(sum);
+}
+
+unsigned int sum_of_digits(unsigned int num)
+{
+  if (num < 10){
+    return num; // the sum of a one digit number is the number
+  }
+  return sum_of_digits(num / 10) + (num % 10);
 }
