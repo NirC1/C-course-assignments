@@ -1,0 +1,16 @@
+Please enter the board size N [1-10]:
+Welcome to 2x2 Tic-Tac-Toe:
+_ _
+_ _
+Player 1, please insert your move:
+Invalid indices (out of bounds), please choose your move again:
+_ X
+_ _
+Player 2, please insert your move:
+Invalid indices (out of bounds), please choose your move again:
+O X
+_ _
+Player 1, please insert your move:
+O X
+X _
+Player 1 is the winner!

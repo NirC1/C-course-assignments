@@ -1,0 +1,3 @@
+Enter the search string:
+Enter the strings pool:
+Number of rotations of " Giant" in the strings pool is: 1
