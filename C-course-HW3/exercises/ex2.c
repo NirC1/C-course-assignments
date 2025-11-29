@@ -13,7 +13,7 @@ int main(void){
     int pool_str_index = 0; // points at the location after the last string in the pool
     char search_str_rotations[MAX_STR_LEN][MAX_STR_LEN + 1]; // holds all of the possible rotations of the search string
 
-    printf("Enter the search string: \n");
+    printf("Enter the search string:\n");
     scanf("%[^\n]%*c", search_str);
 
 
