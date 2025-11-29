@@ -5,7 +5,6 @@
 #define MAX_STR_LEN 10
 #define STR_POOL_SIZE 20
 
-void print_string_pool(char (*pool)[MAX_STR_LEN +1], int last);
 int init_string_rotation_arr(char search_str[], char (*search_str_rotations)[MAX_STR_LEN + 1]);
 int strcmp_insensitive(const char *s1, const char *s2);
 
@@ -17,8 +16,6 @@ int main(void){
     printf("Enter the search string: \n");
     scanf("%[^\n]%*c", search_str);
 
-    // for testing
-    //printf("%s\n", search_str);
 
     int num_of_rotations = init_string_rotation_arr(search_str, search_str_rotations);
 
@@ -27,7 +24,6 @@ int main(void){
     int ret;
     while(pool_str_index < STR_POOL_SIZE){
         ret = scanf("%[^\n]%*c", str_pool[pool_str_index]);
-        //printf("scanf returned: %d\n", ret); // testing
 
         if (ret == EOF) { // Successful EOF
             break; 
@@ -44,18 +40,14 @@ int main(void){
     }
     
 
-    //print_string_pool(str_pool, pool_str_index);
 
     // compare the strings
     int count = 0;
     for(int i = 0; i < pool_str_index; i++){
         for(int j = 0; j < num_of_rotations; j++){
-            printf("comparing %s and %s : ", search_str_rotations[j], str_pool[i]);
             if(strcmp_insensitive(search_str_rotations[j], str_pool[i]) == 0){
-                printf("success");
                 count++;
             }
-            printf("\n");
         }
     }
 
@@ -65,15 +57,6 @@ int main(void){
     return 0;
 }
 
-void print_string_pool(char (*pool)[MAX_STR_LEN +1], int last)
-{
-    printf("Printing string pool\n"); // testing
-    for(int i = 0; i < last; i++){
-        printf("%s\n", pool[i]);
-    }
-    printf("pool last: %d\n", last); 
-    
-}
 
 int init_string_rotation_arr(char search_str[], char (*search_str_rotations)[MAX_STR_LEN + 1])
 {
@@ -84,7 +67,6 @@ int init_string_rotation_arr(char search_str[], char (*search_str_rotations)[MAX
             search_str_rotations[i][j] = search_str[(j + i) % N];
         }
         search_str_rotations[i][j] = '\0';
-        //printf("string i = %d, %s\n", i, search_str_rotations[i]);
     }
     return N;
 }
