@@ -9,7 +9,7 @@ int init_string_rotation_arr(char search_str[], char (*search_str_rotations)[MAX
 int strcmp_insensitive(const char *s1, const char *s2);
 
 int main(void){
-    char search_str[MAX_STR_LEN + 1], str_pool[STR_POOL_SIZE][MAX_STR_LEN +1];
+    char search_str[MAX_STR_LEN + 1] = {0}, str_pool[STR_POOL_SIZE][MAX_STR_LEN +1] = {0};
     int pool_str_index = 0; // points at the location after the last string in the pool
     char search_str_rotations[MAX_STR_LEN][MAX_STR_LEN + 1]; // holds all of the possible rotations of the search string
 
@@ -31,7 +31,8 @@ int main(void){
 
         if (ret == 0) { // did not match anything, could only be \n
             getchar(); // Consume the '\n'
-            break; // Stop reading input
+            str_pool[pool_str_index][0] = '\0';
+            pool_str_index++;
         }
 
         if (ret == 1) { // successfully read a string terminated by a newline
@@ -47,6 +48,7 @@ int main(void){
         for(int j = 0; j < num_of_rotations; j++){
             if(strcmp_insensitive(search_str_rotations[j], str_pool[i]) == 0){
                 count++;
+                break;
             }
         }
     }
@@ -61,6 +63,10 @@ int main(void){
 int init_string_rotation_arr(char search_str[], char (*search_str_rotations)[MAX_STR_LEN + 1])
 {
     int N = strlen(search_str);
+    if(0 == N){
+        search_str_rotations[0][0] = '\0';
+        return 1;
+    }
     for(int i = 0; i < N; i++){
         int j = 0;
         for(; j < N; j++){
