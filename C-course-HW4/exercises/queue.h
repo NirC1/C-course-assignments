@@ -21,4 +21,4 @@ void queue_next_song(Queue *q);
 void print_queue(const Queue *q);
 void free_queue(Queue *q);
 
-#endif // QUEUE_H
+#endif 
