@@ -17,7 +17,7 @@ void create_database(Database *db, int initial_capacity) {
    
     db->count = 0;
     db->capacity = initial_capacity;
-    /* optionally set all pointers to NULL to avoid accidental frees */
+    /* set all pointers to NULL to avoid accidental frees */
     for (int i = 0; i < initial_capacity; i++) {
         db->songs[i] = NULL;
     }

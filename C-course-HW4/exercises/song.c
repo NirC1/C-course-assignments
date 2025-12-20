@@ -59,11 +59,9 @@ void free_song(Song *s) {
     }
     if (s->title != NULL) {
         free(s->title);
-        s->title = NULL;
     }
     if (s->artist != NULL) {
         free(s->artist);
-        s->artist = NULL;
     }
     free(s);
 }
