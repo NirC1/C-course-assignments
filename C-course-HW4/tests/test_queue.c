@@ -47,9 +47,6 @@ int main(void) {
 
     print_queue(q);
 
-    /* The expected output file has a blank line after the queue. */
-    printf("\n");
-
     free_queue(q);
     free_db(db);
     return 0;
