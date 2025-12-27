@@ -1,0 +1,2 @@
+Please enter an unsigned integer n:
+The Largest Power of 2 Smaller or Equal to 15 is: 8
