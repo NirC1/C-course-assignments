@@ -1,0 +1,2 @@
+Please enter an unsigned integer n:
+The binary representation of 18 is not a palindrome
