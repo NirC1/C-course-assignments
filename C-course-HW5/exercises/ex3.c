@@ -17,6 +17,15 @@ static void print_stats(stats_t stats) {
   printf("Middle byte value: 0x%X\n", stats.byte_mdl);
 }
 
+unsigned int cnt_ones(unsigned char n) {
+  unsigned int count = 0;
+  while (n) {
+    count += n & 1u;
+    n >>= 1;
+  }
+  return count;
+}
+
 static stats_t compute_stats(FILE *file) {
   stats_t stats = {0};
 
@@ -41,7 +50,7 @@ static stats_t compute_stats(FILE *file) {
     return stats;
   }
  
-  unsigned char *buffer = (unsigned char *)malloc(bytes);
+  unsigned char *buffer = (unsigned char *)malloc(bytes); // guaranteed to be < 1MB
   if (!buffer) {
     return stats;
   }
@@ -55,7 +64,7 @@ static stats_t compute_stats(FILE *file) {
 
   for (unsigned long i = 0; i < bytes; i++) {
     unsigned char c = buffer[i];
-    unsigned int ones = __builtin_popcount((unsigned int)c);
+    unsigned int ones = cnt_ones(c);
     stats.cnt_1 += ones;
     stats.cnt_0 += (8u - ones);
     freq[c]++;
@@ -79,6 +88,8 @@ static stats_t compute_stats(FILE *file) {
   return stats;
 }
 
+
+
 int main(int argc, char *argv[]) {
   stats_t stats;
 
@@ -90,7 +101,7 @@ int main(int argc, char *argv[]) {
   FILE *file = fopen(argv[1], "rb");
   if (!file) {
 
-    printf("Usage: %s <binary_file>\n", argv[0]);
+    printf("Error opening file: %s\n", argv[1]); // check if this is the correct message for file open error
     return 0;
   }
   
