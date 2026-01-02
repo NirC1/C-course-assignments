@@ -73,7 +73,7 @@ static stats_t compute_stats(FILE *file) {
   unsigned long max_freq = 0;
   unsigned int max_byte = 0;
   for (unsigned int i = 0; i < 256; i++) {
-    if (freq[i] > max_freq || (freq[i] == max_freq && i < max_byte)) {
+    if (freq[i] > max_freq) {
       max_freq = freq[i];
       max_byte = i;
     }
