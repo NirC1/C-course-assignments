@@ -1,0 +1,10 @@
+Usage:
+  -h             Help [0-0]:	Print this description,
+  -v          Version [0-7]:	Protocol version,
+  -l    Packet Length [0-15]:	Packet length in 4 bytes units,
+  -t      Packet Type [0-31]:	Packet type,
+  -s      Source Node [0-127]:	Sender address,
+  -d Destination Node [0-127]:	Receiver address,
+  -p         Priority [0-2]:	Priority class (0 = low … 2 = high),
+  -e        Encrypted [0-1]:	1 if the packet is encrypted,
+Please try again.

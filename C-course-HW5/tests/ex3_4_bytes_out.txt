@@ -1,0 +1,5 @@
+Total bits set to 1: 14
+Total bits set to 0: 18
+Total number of bytes: 4
+Most frequent byte value: 0x1B
+Middle byte value: 0x91
