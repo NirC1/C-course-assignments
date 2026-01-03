@@ -4,6 +4,15 @@
 #include <stdbool.h>
 #include "parser.h"
 
+unsigned int cnt_ones(unsigned int n) {
+  unsigned int count = 0;
+  while (n) {
+    count += n & 1u;
+    n >>= 1;
+  }
+  return count;
+}
+
 static unsigned int encode_packet_header(header_t hdr) {
 
   unsigned int packet = 0;
@@ -17,7 +26,7 @@ static unsigned int encode_packet_header(header_t hdr) {
   packet |= ((unsigned int)(hdr.encrypted ? 1u : 0u)) << 3;
 
   unsigned int top29 = packet >> 3;
-  unsigned int ones = __builtin_popcount(top29);
+  unsigned int ones = cnt_ones(top29);
   unsigned int checksum = ones % 8u;
  
   packet |= (checksum & 0x7u);

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "parser.h"
 
-#define FIELDS_LEN(flags) (sizeof(flags) / sizeof(flags_t))
+#define FIELDS_LEN(flags) (int)(sizeof(flags) / sizeof(flags_t))
 
 #define FIELDS_MIN 0
 #define VERSION_MAX 7
