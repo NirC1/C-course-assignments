@@ -4,18 +4,90 @@
 #include "org_tree.h"
 #define FP_LEN 9
 
-/* Helper to print a success message. */
-static void print_success(int mask, char *op,
-                          char* fingerprint,
-                          char* first_name,
-                          char* second_name)
-{
-    printf("Successful Decrypt! The Mask used was mask_%d of type (%s) and "
-           "The fingerprint was %.*s belonging to %s %s\n",
-           mask, op, FP_LEN, fingerprint, first_name, second_name);
+/**
+ * Helper: Reads the cipher file and converts 9 lines of binary strings to integers.
+ * Returns 1 on success, 0 on failure.
+ */
+static int read_cipher(const char *path, int *cipher_out) {
+    FILE *f = fopen(path, "r");
+    if (!f) {
+        printf("Error opening file: %s\n", path);
+        return 0;
+    }
+    
+    char line[64];
+    for (int i = 0; i < FP_LEN; i++) {
+        if (!fgets(line, sizeof(line), f)) {
+            cipher_out[i] = 0;
+        } else {
+            int val = 0;
+            for (int k = 0; line[k]; k++) {
+                if (line[k] == '0' || line[k] == '1') {
+                    val = (val << 1) | (line[k] - '0');
+                } else if (line[k] == '\n' || line[k] == '\r') {
+                    break;
+                }
+            }
+            cipher_out[i] = val;
+        }
+    }
+    fclose(f);
+    return 1;
 }
 
-/* Helper to print a failure message. */
+/**
+ * Helper: Checks if a node's fingerprint matches the cipher using a specific mask and operation.
+ * op_type: 0 for XOR, 1 for AND.
+ * Returns 1 if match, 0 otherwise.
+ */
+static int check_node(const Node *node, const int *cipher, int mask, int op_type) {
+    if (!node) return 0;
+    
+    for (int i = 0; i < FP_LEN; i++) {
+        unsigned char plain = (unsigned char)node->fingerprint[i];
+        int val = (op_type == 0) ? (plain ^ mask) : (plain & mask);
+        
+        if (val != cipher[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/**
+ * Helper: Searches the organization tree for a matching fingerprint.
+ * Returns the matching Node pointer or NULL if no match found.
+ */
+static const Node* find_decrypted_match(const Org *org, const int *cipher, int mask, int op_type) {
+    if (check_node(org->boss, cipher, mask, op_type)) return org->boss;
+    if (check_node(org->left_hand, cipher, mask, op_type)) return org->left_hand;
+    if (check_node(org->right_hand, cipher, mask, op_type)) return org->right_hand;
+    
+    if (org->left_hand) {
+        Node *curr = org->left_hand->supports_head;
+        while (curr) {
+            if (check_node(curr, cipher, mask, op_type)) return curr;
+            curr = curr->next;
+        }
+    }
+    
+    if (org->right_hand) {
+        Node *curr = org->right_hand->supports_head;
+        while (curr) {
+            if (check_node(curr, cipher, mask, op_type)) return curr;
+            curr = curr->next;
+        }
+    }
+    
+    return NULL;
+}
+
+static void print_success(int mask, char *op, char* fingerprint, char* First_Name, char* Second_Name)
+{
+    printf("Successful Decrypt! The Mask used was mask_%d of type (%s) and The fingerprint was %.*s belonging to %s %s\n",
+                       mask, op, FP_LEN, fingerprint, First_Name, Second_Name);
+}
+
 static void print_unsuccess()
 {
     printf("Unsuccesful decrypt, Looks like he got away\n");
@@ -26,100 +98,65 @@ int main(int argc, char **argv) {
         printf("Usage: %s <clean_file.txt> <cipher_bits.txt> <mask_start_s>\n", argv[0]);
         return 0;
     }
-    const char *clean_path  = argv[1];
-    const char *cipher_path = argv[2];
+    
+    // TODO: read the input files
+    const char *clean_file  = argv[1];
+    const char *cipher_file = argv[2];
     int start_mask          = (int)strtol(argv[3], NULL, 10);
+    int cipher[FP_LEN] = {0};
 
-    Org org = build_org_from_clean_file(clean_path);
-    /* If the file fails to open, build_org_from_clean_file already prints an error
-       and leaves org empty. */
+
+    // TODO: build the organization
+    Org org = build_org_from_clean_file(clean_file);
     if (!org.boss && !org.left_hand && !org.right_hand) {
+        // Error message printed by build function usually, but check if we need to print specific file error
+        // The instructions say "In case of file opening failure - print ... Error opening file: ..."
+        // build_org_from_clean_file is expected to handle that. 
+        // For cipher file we must handle it here.
         return 0;
     }
-
-    FILE *cf = fopen(cipher_path, "r");
-    if (!cf) {
-        printf("Error opening file: %s\n", cipher_path);
+    
+    // Read cipher
+    if (!read_cipher(cipher_file, cipher)) {
         free_org(&org);
         return 0;
     }
-    int cipher[FP_LEN] = {0};
-    char line[64];
-    for (int i = 0; i < FP_LEN; i++) {
-        if (!fgets(line, sizeof(line), cf)) {
-            cipher[i] = 0;
-        } else {
-            int value = 0;
-            for (int j = 0; line[j] != '\0'; j++) {
-                if (line[j] == '0' || line[j] == '1') {
-                    value = (value << 1) | (line[j] - '0');
-                } else if (line[j] == '\n' || line[j] == '\r') {
-                    break;
-                }
-            }
-            cipher[i] = value;
+    
+
+    // TODO: attempt to decrypt the file
+    int found = 0;
+    int found_mask = 0;
+    char *found_op_str = NULL;
+    const Node *match = NULL;
+
+    for (int m = start_mask; m <= start_mask + 10 && !found; m++) {
+
+        // Try XOR (0)
+        match = find_decrypted_match(&org, cipher, m, 0);
+        if (match) {
+            found = 1;
+            found_mask = m;
+            found_op_str = "XOR";
+            break;
         }
-    }
-    fclose(cf);
-
-    int found = 0, found_mask = 0;
-    char *found_op     = NULL;
-    char *found_fp     = NULL;
-    char *found_first  = NULL;
-    char *found_second = NULL;
-
-    /* Try masks from start_mask to start_mask+10 and both XOR/AND operations. */
-    for (int mask = start_mask; mask <= start_mask + 10 && !found; mask++) {
-        for (int op_idx = 0; op_idx < 2 && !found; op_idx++) {
-            const char *op_name = (op_idx == 0 ? "XOR" : "AND");
-            /* Gather all nodes into an array for easy iteration. */
-            const Node *nodes[100];
-            int count = 0;
-            if (org.boss)      nodes[count++] = org.boss;
-            if (org.left_hand) nodes[count++] = org.left_hand;
-            if (org.right_hand)nodes[count++] = org.right_hand;
-            if (org.left_hand) {
-                Node *c = org.left_hand->supports_head;
-                while (c && count < 100) {
-                    nodes[count++] = c;
-                    c = c->next;
-                }
-            }
-            if (org.right_hand) {
-                Node *c = org.right_hand->supports_head;
-                while (c && count < 100) {
-                    nodes[count++] = c;
-                    c = c->next;
-                }
-            }
-            for (int n = 0; n < count && !found; n++) {
-                const Node *node = nodes[n];
-                int ok = 1;
-                for (int i = 0; i < FP_LEN; i++) {
-                    unsigned char plain = (unsigned char)node->fingerprint[i];
-                    int out = (op_idx == 0 ? (plain ^ mask) : (plain & mask));
-                    if (out != cipher[i]) {
-                        ok = 0;
-                        break;
-                    }
-                }
-                if (ok) {
-                    found      = 1;
-                    found_mask = mask;
-                    found_op   = (char *)op_name;
-                    found_fp   = node->fingerprint;
-                    found_first  = node->first;
-                    found_second = node->second;
-                }
-            }
+        
+        // Try AND (1)
+        match = find_decrypted_match(&org, cipher, m, 1);
+        if (match) {
+            found = 1;
+            found_mask = m;
+            found_op_str = "AND";
+            break;
         }
     }
 
-    if (found) {
-        print_success(found_mask, found_op, found_fp, found_first, found_second);
+    if (found && match) {
+        print_success(found_mask, (char*)found_op_str, (char*)match->fingerprint, (char*)match->first, (char*)match->second);
     } else {
         print_unsuccess();
     }
+
+    // TODO: free any memory you may have allocated
     free_org(&org);
     return 0;
 }
