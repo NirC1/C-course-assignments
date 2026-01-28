@@ -63,13 +63,13 @@ Org build_org_from_clean_file(const char *path) {
         } else if (strcmp(position, "Left Hand") == 0) {
             if (!org.left_hand) org.left_hand = node;
             else free(node);
-        } else if (strcmp(position, "Support Right") == 0) {
+        } else if (strcmp(position, "Support_Right") == 0) {
             if (!sr_head) sr_head = sr_tail = node;
             else {
                 sr_tail->next = node;
                 sr_tail = node;
             }
-        } else if (strcmp(position, "Support Left") == 0) {
+        } else if (strcmp(position, "Support_Left") == 0) {
             if (!sl_head) sl_head = sl_tail = node;
             else {
                 sl_tail->next = node;
@@ -143,6 +143,15 @@ static void free_node(Node *node) {
 
 void free_org(Org *org) {
     if (!org) return;
-    free_node(org->boss);
+
+    /* If boss exists, it owns left_hand and right_hand, so freeing boss frees them.
+       If boss is missing, we must free left_hand and right_hand individually to avoid leaks. */
+    if (org->boss) {
+        free_node(org->boss);
+    } else {
+        if (org->left_hand) free_node(org->left_hand);
+        if (org->right_hand) free_node(org->right_hand);
+    }
+    
     org->boss = org->left_hand = org->right_hand = NULL;
 }
