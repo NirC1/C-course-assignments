@@ -3,6 +3,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#define LABEL_COUNT 4
+
 /* Determine if a character is a noise character (to be ignored). */
 static int is_noise_char(int c) {
     return (c == '#' || c == '?' || c == '!' || c == '@' ||
@@ -46,215 +48,154 @@ static char *read_and_clean_file(const char *path) {
     return buf;
 }
 
-/* Trim leading/trailing whitespace in place. */
-static void trim_inplace(char *str) {
-    size_t start = 0;
-    while (str[start] && isspace((unsigned char)str[start])) {
-        start++;
-    }
-    size_t end = strlen(str);
-    if (end == 0) return;
-    size_t idx = end;
-    while (idx > start && isspace((unsigned char)str[idx - 1])) {
-        idx--;
-    }
-    str[idx] = '\0';
-    if (start > 0) {
-        memmove(str, str + start, idx - start + 1);
-    }
+char* trim(char *s) {
+    while (isspace((unsigned char)*s)) s++;
+    if (*s == 0) return s;
+    char *back = s + strlen(s) - 1;
+    while (back > s && isspace((unsigned char)*back)) back--;
+    *(back + 1) = '\0';
+    return s;
 }
 
 /* Structure for a single cleaned entry. */
-typedef struct Entry {
-    char *first;
-    char *second;
-    char *fingerprint;
-    char *position;
+typedef struct {
+    char *fields[4]; // Order: First, Second, Fingerprint, Position
 } Entry;
 
-/* Free memory for one Entry. */
-static void free_entry(Entry *e) {
-    if (!e) return;
-    free(e->first);
-    free(e->second);
-    free(e->fingerprint);
-    free(e->position);
-}
+// Labels to look for in the clean buffer
+const char *LABELS[] = {"First Name:", "Second Name:", "Fingerprint:", "Position:"};
 
-/* Check for duplicate fingerprints. */
-static int fingerprint_exists(const char *fp, Entry *list, size_t count) {
-    for (size_t i = 0; i < count; i++) {
-        if (strcmp(list[i].fingerprint, fp) == 0) {
-            return 1;
-        }
+
+size_t count_substring(const char *text, const char *sub) {
+    if (*sub == '\0') return 0;  // avoid infinite loop
+
+    size_t count = 0;
+    const char *p = text;
+
+    while ((p = strstr(p, sub)) != NULL) {
+        count++;
+        p += strlen(sub);  // jump past this occurrence
     }
-    return 0;
+
+    return count;
 }
 
-/* Append an Entry to a dynamic array. */
-static int append_entry(Entry **array, size_t *count, Entry item) {
-    Entry *tmp = (Entry *)realloc(*array, (*count + 1) * sizeof(Entry));
-    if (!tmp) return -1;
-    *array = tmp;
-    (*array)[*count] = item;
-    (*count)++;
-    return 0;
-}
 
 int main(int argc, char **argv) {
     if (argc != 3) {
         printf("Usage: %s <input_corrupted.txt> <output_clean.txt>\n", argv[0]);
         return 0;
     }
-    const char *in_path = argv[1], *out_path = argv[2];
-    char *content = read_and_clean_file(in_path);
-    if (!content) {
+
+    char *buffer = read_and_clean_file(argv[1]);
+    if (!buffer) return 0;
+
+    // printf("Cleaned Buffer:\n%s\n", buffer);
+
+    // 2. Count entries
+    size_t entry_count = count_substring(buffer, LABELS[0]);
+    char **label_ptrs = (char **)malloc(entry_count * LABEL_COUNT * sizeof(char *));
+    if (!label_ptrs) {
+        printf("Error allocating memory for label pointers\n");
+        free(buffer);
         return 0;
     }
 
-    /* Labels and lengths. */
-    const char *label_first = "First Name:";
-    const char *label_second = "Second Name:";
-    const char *label_fp = "Fingerprint:";
-    const char *label_pos = "Position:";
-    size_t label_first_len = strlen(label_first);
-    size_t label_second_len = strlen(label_second);
-    size_t label_fp_len = strlen(label_fp);
-    size_t label_pos_len = strlen(label_pos);
+    char *curr = buffer;
 
-    /* Dynamic arrays for each category. */
-    Entry *boss_list = NULL;   size_t boss_count = 0;
-    Entry *right_list = NULL;  size_t right_count = 0;
-    Entry *left_list = NULL;   size_t left_count = 0;
-    Entry *sr_list = NULL;     size_t sr_count = 0;
-    Entry *sl_list = NULL;     size_t sl_count = 0;
-    Entry *all_entries = NULL; size_t all_count = 0;
 
-    /* Parse cleaned string. */
-    size_t pos = 0;
-    size_t content_len = strlen(content);
-    while (1) {
-        char *p_first = strstr(content + pos, label_first);
-        if (!p_first) break;
-        pos = (size_t)(p_first - content) + label_first_len;
-        char *p_second = strstr(content + pos, label_second);
-        if (!p_second) break;
-        size_t len_first = (size_t)(p_second - (content + pos));
-        char *first_val = malloc(len_first + 1);
-        if (!first_val) { printf("Error allocating memory\n"); goto cleanup; }
-        strncpy(first_val, content + pos, len_first);
-        first_val[len_first] = '\0';
-        trim_inplace(first_val);
 
-        pos = (size_t)(p_second - content) + label_second_len;
-        char *p_fp = strstr(content + pos, label_fp);
-        if (!p_fp) { free(first_val); break; }
-        size_t len_second = (size_t)(p_fp - (content + pos));
-        char *second_val = malloc(len_second + 1);
-        if (!second_val) { free(first_val); printf("Error allocating memory\n"); goto cleanup; }
-        strncpy(second_val, content + pos, len_second);
-        second_val[len_second] = '\0';
-        trim_inplace(second_val);
+    for(size_t i = 0; i < entry_count; i++){
+        for(size_t j = 0; j < LABEL_COUNT; j++){
+            char *label_pos = strstr(curr, LABELS[j]);
+            if(label_pos == NULL){
+                label_ptrs[i * LABEL_COUNT + j] = NULL;
+                continue;
+            }
+            curr = label_pos + strlen(LABELS[j]); // move past found label
 
-        pos = (size_t)(p_fp - content) + label_fp_len;
-        char *p_poslbl = strstr(content + pos, label_pos);
-        if (!p_poslbl) { free(first_val); free(second_val); break; }
-        size_t len_fp = (size_t)(p_poslbl - (content + pos));
-        char *fp_val = malloc(len_fp + 1);
-        if (!fp_val) { free(first_val); free(second_val); printf("Error allocating memory\n"); goto cleanup; }
-        strncpy(fp_val, content + pos, len_fp);
-        fp_val[len_fp] = '\0';
-        trim_inplace(fp_val);
-
-        pos = (size_t)(p_poslbl - content) + label_pos_len;
-        char *p_next = strstr(content + pos, label_first);
-        size_t len_pos;
-        if (p_next) {
-            len_pos = (size_t)(p_next - (content + pos));
-        } else {
-            len_pos = content_len - pos;
+            label_ptrs[i * LABEL_COUNT + j] = label_pos;
         }
-        char *pos_val = malloc(len_pos + 1);
-        if (!pos_val) { free(first_val); free(second_val); free(fp_val); printf("Error allocating memory\n"); goto cleanup; }
-        strncpy(pos_val, content + pos, len_pos);
-        pos_val[len_pos] = '\0';
-        trim_inplace(pos_val);
+    }
 
-        pos += len_pos;
 
-        /* Deduplicate by fingerprint. */
-        if (fingerprint_exists(fp_val, all_entries, all_count)) {
-            free(first_val); free(second_val); free(fp_val); free(pos_val);
+    // 3. Isolate values
+    for (size_t i = 0; i < entry_count*LABEL_COUNT; i++)
+    {
+        int lbl = i % LABEL_COUNT;
+        if(label_ptrs[i] == NULL){
             continue;
         }
-        Entry entry = { first_val, second_val, fp_val, pos_val };
-        if (append_entry(&all_entries, &all_count, entry) != 0) {
-            printf("Error allocating memory\n");
-            free_entry(&entry);
-            goto cleanup;
+        char *label_start = label_ptrs[i];
+    
+        // The data actually starts after the label string
+        char *data_start = label_start + strlen(LABELS[lbl]);
+        // Terminate the field BEFORE this one (if it's not the very first label)
+        if (i > 0) {
+            *label_start = '\0'; 
         }
-        /* Categorize by position. */
-        if (strcmp(pos_val, "Boss") == 0) {
-            append_entry(&boss_list, &boss_count, entry);
-        } else if (strcmp(pos_val, "Right Hand") == 0) {
-            append_entry(&right_list, &right_count, entry);
-        } else if (strcmp(pos_val, "Left Hand") == 0) {
-            append_entry(&left_list, &left_count, entry);
-        } else if (strcmp(pos_val, "Support Right") == 0) {
-            append_entry(&sr_list, &sr_count, entry);
-        } else if (strcmp(pos_val, "Support Left") == 0) {
-            append_entry(&sl_list, &sl_count, entry);
+        // Now update the pointer to point to the actual value, not the label
+        label_ptrs[i] = data_start;
+        // printf("Label %zu: %s\n", i, label_ptrs[i]);
+    }
+
+
+    Entry *list = NULL;
+    int count = 0;
+
+    list = (Entry *)malloc(entry_count * sizeof(Entry));
+    if (!list) {
+        printf("Error allocating memory for entries\n");
+        free(buffer);
+        free(label_ptrs);
+        return 0;
+    }
+
+    // 4. Populate entries
+    for (size_t i = 0; i < entry_count; i++) {
+        Entry e;
+        if(label_ptrs[i * LABEL_COUNT] == NULL ||
+           label_ptrs[i * LABEL_COUNT + 1] == NULL ||
+           label_ptrs[i * LABEL_COUNT + 2] == NULL ||
+           label_ptrs[i * LABEL_COUNT + 3] == NULL) {
+            continue; // skip incomplete entries
+        }
+        for (size_t j = 0; j < LABEL_COUNT; j++) {
+            e.fields[j] = trim(label_ptrs[i * LABEL_COUNT + j]);
+        }
+
+        // Check for duplicate fingerprints
+        int exists = 0;
+        for (int k = 0; k < count; k++) {
+            if (strcmp(list[k].fields[2], e.fields[2]) == 0) {
+                exists = 1;
+                break;
+            }
+        }
+        if (!exists) {
+            list[count++] = e;
         }
     }
 
-    /* Write output in specified order. */
-    FILE *outf = fopen(out_path, "w");
-    if (!outf) {
-        printf("Error opening file: %s\n", out_path);
-        goto cleanup;
-    }
-    for (size_t i = 0; i < boss_count; i++) {
-        fprintf(outf, "First Name: %s\n", boss_list[i].first);
-        fprintf(outf, "Second Name: %s\n", boss_list[i].second);
-        fprintf(outf, "Fingerprint: %s\n", boss_list[i].fingerprint);
-        fprintf(outf, "Position: %s\n\n", boss_list[i].position);
-    }
-    for (size_t i = 0; i < right_count; i++) {
-        fprintf(outf, "First Name: %s\n", right_list[i].first);
-        fprintf(outf, "Second Name: %s\n", right_list[i].second);
-        fprintf(outf, "Fingerprint: %s\n", right_list[i].fingerprint);
-        fprintf(outf, "Position: %s\n\n", right_list[i].position);
-    }
-    for (size_t i = 0; i < left_count; i++) {
-        fprintf(outf, "First Name: %s\n", left_list[i].first);
-        fprintf(outf, "Second Name: %s\n", left_list[i].second);
-        fprintf(outf, "Fingerprint: %s\n", left_list[i].fingerprint);
-        fprintf(outf, "Position: %s\n\n", left_list[i].position);
-    }
-    for (size_t i = 0; i < sr_count; i++) {
-        fprintf(outf, "First Name: %s\n", sr_list[i].first);
-        fprintf(outf, "Second Name: %s\n", sr_list[i].second);
-        fprintf(outf, "Fingerprint: %s\n", sr_list[i].fingerprint);
-        fprintf(outf, "Position: %s\n\n", sr_list[i].position);
-    }
-    for (size_t i = 0; i < sl_count; i++) {
-        fprintf(outf, "First Name: %s\n", sl_list[i].first);
-        fprintf(outf, "Second Name: %s\n", sl_list[i].second);
-        fprintf(outf, "Fingerprint: %s\n", sl_list[i].fingerprint);
-        fprintf(outf, "Position: %s\n\n", sl_list[i].position);
-    }
-    fclose(outf);
+    free(label_ptrs);
 
-cleanup:
-    free(content);
-    for (size_t i = 0; i < all_count; i++) {
-        free_entry(&all_entries[i]);
+
+    // 5. Output based on required ordering 
+    FILE *out = fopen(argv[2], "w");
+    const char *order[] = {"Boss", "Right Hand", "Left Hand", "Support_Right", "Support_Left"};
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < count; j++) {
+            if (strcmp(list[j].fields[3], order[i]) == 0) {
+                fprintf(out, "First Name: %s\nSecond Name: %s\nFingerprint: %s\nPosition: %s\n\n",
+                        list[j].fields[0], list[j].fields[1], list[j].fields[2], list[j].fields[3]);
+            }
+        }
     }
-    free(all_entries);
-    free(boss_list);
-    free(right_list);
-    free(left_list);
-    free(sr_list);
-    free(sl_list);
+
+    fclose(out);
+    free(buffer);
+    free(list);
     return 0;
+
+
 }
